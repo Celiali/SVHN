@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.utils.data as Data
 import matplotlib.pyplot as plt
 
-
+# define dataset
 transform = transforms.Compose([
     transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
@@ -23,7 +23,7 @@ svhn = datasets.SVHN(root='./dataset', download=False, transform=transform, spli
 svhn_vali = datasets.SVHN(root='./dataset', download=False, transform=transform, split='train')
 svhn_test = datasets.SVHN(root='./dataset', download=False, transform=transform, split='test')
 
-
+# define data loader
 train_loader = torch.utils.data.DataLoader(dataset=svhn,
                                            batch_size=4096,
                                            shuffle=True,
@@ -88,12 +88,13 @@ EPOCH = 50  # train the training data n times, to save time, we just train 1 epo
 LR = 0.001  # learning rate
 TRAIN_ON_GPU = True
 
-cnn = CNN()
-
-# Add the following code anywhere in your machine learning file
+# comet ml recording 
 experiment = Experiment(api_key="xxxxx",
                         project_name="xxxxx", workspace="xxxxx")
 experiment.add_tags(["svhn epoch{}".format(EPOCH)])
+
+# model initial
+cnn = CNN()
 optimizer = torch.optim.Adam(cnn.parameters(), lr=LR)  # optimize all cnn parameters
 loss_func = nn.CrossEntropyLoss()
 print(cnn)
@@ -101,6 +102,7 @@ print(cnn)
 if TRAIN_ON_GPU:
     cnn.cuda()
 
+# training
 train_loss = []
 vali_loss = []
 valid_loss_min = 99999.9
@@ -150,6 +152,7 @@ for epoch in range(EPOCH):
             torch.save(cnn.state_dict(), model_name)
             valid_loss_min = total_validation_loss
 
+# testing
 with experiment.test():
     with torch.no_grad():
         model = CNN()
